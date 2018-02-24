@@ -29,9 +29,16 @@ let identifier = parser i:''[a-zA-Z_][a-zA-Z0-9_]*'' -> mkloc i _loc
 let macro_name = parser
   '\\' mac_name:identifier -> mac_name
 
-(** TODO implement *)
+let documentclass_option = parser
+  | key:identifier -> Latex.ClsFlag key
+  | key:identifier '=' value:{v:''[^]]+''-> mkloc v _loc} -> Latex.ClsVal(key, value)
+
 let documentclass_options = parser
-  EMPTY -> []
+  '[' o1:documentclass_option?
+  o2:{ ',' o:documentclass_option }* ']' ->
+    match o1 with
+    | Some(o1) -> o1 :: o2
+    | None -> []
 
 let documentclass = parser
   "\\documentclass"
