@@ -31,9 +31,9 @@ let documentclass = parser
     Latex.({cls_name; cls_options; cls_loc = _loc})
 
 let environment = parser
-  "\\begin{" env_name:identifier '}'
-  (** TODO add content *) ->>
-  "\\end{" env_end_name:identifier '}' (* when env_name = env_end_name *) ->
+  "\\begin{" env_name:identifier '}' ->>
+  (** TODO add content *)
+  "\\end{" STR(txt env_name) '}' ->
     Latex.({env_name; env_content = []; env_loc = _loc})
 
 (** TODO implement *)

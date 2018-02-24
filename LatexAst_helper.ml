@@ -13,6 +13,8 @@ let with_default_loc loc f =
 
 let mkloc = Location.mkloc
 
+let txt loc = loc.Location.txt
+
 module DocCls = struct
   let mk ?(loc = !default_loc) ?(options = []) name = {
     cls_name = name;
