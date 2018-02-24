@@ -6,6 +6,15 @@ open LatexAst_helper
 let locate = Pa_ocaml_prelude.locate
 #define LOCATE locate
 
+type latex_syntax_error =
+  | Unmatched_environment of string Location.loc * string Location.loc
+  | Document_environment
+
+exception Latex_syntax_error of loc * latex_syntax_error
+
+let raise_latex ?(loc=!default_loc) err =
+  raise (Latex_syntax_error(loc, err))
+
 (** Usual blank functions for LaTeX, which ignores comments starting
 with a [%] sign an ending at the end of line. *)
 let latex_blank =
@@ -30,11 +39,19 @@ let documentclass = parser
   '{' cls_name:identifier '}' ->
     Latex.({cls_name; cls_options; cls_loc = _loc})
 
-let environment = parser
+let environment_end env_name = parser
+  "\\end{" env_close_name:identifier '}' ->
+    if txt env_close_name = txt env_name
+    then Latex.({env_name; env_content = []; env_loc = _loc})
+    else raise_latex ~loc:_loc (Unmatched_environment(env_name, env_close_name))
+
+let parser environment =
   "\\begin{" env_name:identifier '}' ->>
-  (** TODO add content *)
-  "\\end{" STR(txt env_name) '}' ->
-    Latex.({env_name; env_content = []; env_loc = _loc})
+  content
+  e:(environment_end env_name) -> { e with Latex.env_loc = _loc }
+
+and parser content =
+  environment*
 
 (** TODO implement *)
 let preamble = parser
@@ -43,5 +60,8 @@ let preamble = parser
 let document = parser
   doc_cls:documentclass
   doc_preamble:preamble
-  doc:environment -> Latex.({doc_cls; doc_preamble; doc_content =
+  doc:environment ->
+    if txt doc.Latex.env_name <> "document"
+    then raise_latex ~loc:doc.Latex.env_loc Document_environment
+    else Latex.({doc_cls; doc_preamble; doc_content =
     doc.env_content})
