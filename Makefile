@@ -1,46 +1,35 @@
-SOURCES := thezformat.ml latexSyntax.ml parser.dyp generateur.ml patothez.ml
-PACK_TYPO := -package Typography,Typography.FormatArticle,camlp4.fulllib,dynlink
-PACK_DYP := -package dyp
-PACK := $(PACK_TYPO) $(PACK_DYP)
-CAMLC := ocamlfind ocamlopt $(PACK)
-DYPGEN := dypgen --no-mli
-CAMLP4OF := camlp4of
+MODULES := Latex LatexAst_helper LatexParser
+SOURCES := $(addsuffix .ml,$(MODULES))
+DEPENDS := $(addsuffix .depends,$(SOURCES))
+OBJECTS := $(SOURCES:.ml=.cmx)
 
-all: patothez thezformat.cmxa
+PACK := -package Typography,earley,earley_ocaml -I +compiler-libs
 
-SOURCES2 := $(SOURCES:.dyp=.ml)
-OBJS := $(SOURCES2:.ml=.cmx)
+OCAMLFIND := ocamlfind
+OCAMLC   = $(OCAMLFIND) ocamlc $(if $(OCPP),-pp '$(OCPP)',) $(PACK)
+OCAMLOPT = $(OCAMLFIND) ocamlopt $(if $(OCPP),-pp '$(OCPP)',) $(PACK)
+OCAMLDEP = $(OCAMLFIND) ocamldep $(if $(OCPP),-pp '$(OCPP)',) $(OCAMLDEPEXTRAS)
+PA_OCAML := pa_ocaml
 
-parser.cmx: parser.ml latexSyntax.cmx thezformat.cmx
-	echo Make parser
-	$(CAMLC) -c $<
+OCAMLFIND_IGNORE_DUPS_IN := $(shell $(OCAMLFIND) query compiler-libs)
+export OCAMLFIND_IGNORE_DUPS_IN
 
-generateur.cmx: generateur.ml latexSyntax.cmx parser.cmx thezformat.cmxa
-	$(CAMLC) -package camlp4 -pp $(CAMLP4OF) -c $<
-patothez.cmx: latexSyntax.cmx generateur.cmx parser.cmx
-thezformat.cmxa: thezformat.ml
-	$(CAMLC) -a -o thezformat.cmxa
+.PHONY: all
+all: patothez.cmxa
 
-patothez: $(OBJS)
-	$(CAMLC) -linkpkg -o patothez $(OBJS)
+patothez.cmxa: $(OBJECTS)
+	$(OCAMLOPT) -a -o $@ $^
 
-.SUFFIXES: .ml .cmx .dyp
+LatexParser.ml.depends LatexParser.cmx: private OCPP := $(PA_OCAML)
 
 %.cmx: %.ml
-	$(CAMLC) -c $<
+	$(OCAMLOPT) -c $<
 
-.dyp.ml:
-	$(DYPGEN) $<
+%.ml.depends: %.ml
+	$(OCAMLDEP) $< > $@
 
+include $(DEPENDS)
+
+.PHONY: clean
 clean:
-	rm -f *.cm[iox] *~ .*~ *.o
-	rm -f patothez
-	rm -f *.extract_type *_temp.ml
-	rm -f *parser.ml *parser.mli
-
-thez.tml: thanks.tex thez.tex patothez
-	./patothez < thez.tex
-thez.opt: thez.tml
-	ocamlfind ocamlopt -o thez.opt -I . -package Typography,Typography.FormatArticle,Typography.Pdf -linkpkg thezformat.cmx -impl thez.tml
-thez.pdf: thez.opt
-	./thez.opt
+	rm -f *.cm[iox] *.depends *~ .*~ *.o *.cma *.cmxa *.a
