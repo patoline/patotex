@@ -113,7 +113,7 @@ and math_content =
    | Binary of int * math_content * bool * symbol * bool * math_content
    | Indices of indices * math_content
    | Apply of math_content * math_content
-   | MathMacro of math_content list macro_call
+   | MathMacro of math_content macro_call
    | Delim of string * math_content * string
    | MScope of math_content list
    | MathString of string
