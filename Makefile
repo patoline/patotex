@@ -15,7 +15,10 @@ OCAMLFIND_IGNORE_DUPS_IN := $(shell $(OCAMLFIND) query compiler-libs)
 export OCAMLFIND_IGNORE_DUPS_IN
 
 .PHONY: all
-all: patothez.cmxa
+all: patothez patothez.cmxa
+
+patothez: patothez.cmxa patothez.cmx
+	$(OCAMLOPT) -linkpkg -o $@ $^
 
 patothez.cmxa: $(OBJECTS)
 	$(OCAMLOPT) -a -o $@ $^
@@ -29,6 +32,7 @@ LatexParser.ml.depends LatexParser.cmx: private OCPP := $(PA_OCAML)
 	$(OCAMLDEP) $< > $@
 
 include $(DEPENDS)
+include patothez.ml.depends
 
 .PHONY: clean
 clean:
