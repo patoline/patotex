@@ -14,6 +14,7 @@ element. *)
 type iterator = {
   document : iterator -> document -> unit;
   documentclass : iterator -> documentclass -> unit;
+  preamble : iterator -> preamble -> unit;
   content : iterator -> content -> unit;
   environment : iterator -> environment -> unit;
   paragraph : iterator -> paragraph -> unit;
@@ -35,11 +36,13 @@ anything during the traversal. *)
 let default_iterator = {
   document = (fun this document ->
     this.documentclass this document.doc_cls;
-    List.iter (this.content this) document.doc_preamble;
+    this.preamble this document.doc_preamble;
     List.iter (this.content this) document.doc_content
   );
 
   documentclass = (fun _ _ -> ());
+
+  preamble = (fun _ _ -> ());
 
   content = (fun this content ->
     match content with

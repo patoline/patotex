@@ -38,7 +38,7 @@ let environment = parser
 
 (** TODO implement *)
 let preamble = parser
-  EMPTY -> []
+  EMPTY -> Latex.({ pre_packages = []; pre_loc = _loc})
 
 let document = parser
   doc_cls:documentclass

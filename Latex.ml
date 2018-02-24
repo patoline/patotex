@@ -15,14 +15,14 @@ When a document starts with
 [\documentclass[option1,option2=value]{class}], this type represents
 [option1] using the [ClsFlag] constructor and [option2=value] using the
 [ClsVal] constructor. *)
-type documentclass_options =
+type documentclass_option =
   | ClsFlag of string loc
   | ClsVal of string loc * string loc
 
 (** Representing the initial [\documentclass] call *)
 type documentclass = {
   cls_name : string loc;
-  cls_options : documentclass_options list;
+  cls_options : documentclass_option list;
   cls_loc : Location.t;
 }
 
@@ -124,9 +124,20 @@ and indices = {
     up_left : math_content option;
     down_left : math_content option }
 
+type package_declaration = {
+  pkg_name : string loc;
+  pkg_params : documentclass_option list;
+  pkg_loc : Location.t;
+}
+(** Preamble *)
+type preamble = {
+  pre_packages: package_declaration list;
+  pre_loc : Location.t;
+}
+
 (* Main type of the syntax tree, returned by the parser *)
 type document = {
   doc_cls : documentclass;
-  doc_preamble : content list;
+  doc_preamble : preamble;
   doc_content : content list;
 }
