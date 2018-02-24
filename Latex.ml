@@ -50,20 +50,14 @@ and environment = {
   env_loc : Location.t;
 }
 
-(** LaTeX paragraphs *)
+(** LaTeX paragraphs.
+
+The given type puts no restriction on content which can appear inside a
+paragraph, yet the LaTeX syntax cannot for example build an environment
+nested in a paragraph. *)
 and paragraph = {
   par_content : content list;
   par_loc : Location.t;
-}
-
-and math = {
-  math_content : math_content list;
-  math_loc : Location.t;
-}
-
-and tikz = {
-  tikz_content : tikz_content list;
-  tikz_loc : Location.t;
 }
 
 (** Main content inside a document *)
@@ -73,6 +67,12 @@ and content =
   | Paragraph of paragraph
   | Math of math
   | Tikz of tikz
+
+(** Tikz drawings. *)
+and tikz = {
+  tikz_content : tikz_content list;
+  tikz_loc : Location.t;
+}
 
 and tikz_coord =
   | Cart of float loc * float loc
@@ -96,33 +96,40 @@ and tikz_path =
 and tikz_content =
   | Path of tikz_path list
 
-(* Math trees *)
-and symbol =
+(** Mathematical formulas. *)
+and math = {
+  math_content : math_content list;
+  math_loc : Location.t;
+}
+
+and math_symbol =
     SimpleSym of string
   | CamlSym of string
 
 and math_content =
      Var of string
-   | Symbol of symbol
+   | Symbol of math_symbol
    | Fun of string
    | Num of string
-   | Prefix of int * symbol * bool * math_content
+   | Prefix of int * math_symbol * bool * math_content
    | Operator of string * math_content
    | Limits_operator of string * math_content
-   | Postfix of int * math_content * bool * symbol
-   | Binary of int * math_content * bool * symbol * bool * math_content
+   | Postfix of int * math_content * bool * math_symbol
+   | Binary of int * math_content * bool * math_symbol * bool * math_content
    | Indices of indices * math_content
    | Apply of math_content * math_content
    | MathMacro of math_content macro_call
    | Delim of string * math_content * string
    | MScope of math_content list
    | MathString of string
-(* Sub- and superscripts for math contents *)
+
+(** Sub- and superscripts for math contents *)
 and indices = {
-    up_right : math_content option;
-    down_right : math_content option;
-    up_left : math_content option;
-    down_left : math_content option }
+  up_right : math_content option;
+  down_right : math_content option;
+  up_left : math_content option;
+  down_left : math_content option
+}
 
 type package_declaration = {
   pkg_name : string loc;
@@ -135,7 +142,7 @@ type preamble = {
   pre_loc : Location.t;
 }
 
-(* Main type of the syntax tree, returned by the parser *)
+(** Main type of the syntax tree, returned by the parser *)
 type document = {
   doc_cls : documentclass;
   doc_preamble : preamble;
