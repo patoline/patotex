@@ -1,4 +1,4 @@
-MODULES := Latex LatexAst_helper LatexParser
+MODULES := Latex LatexAst_helper LatexParser LatexAst_iterator
 SOURCES := $(addsuffix .ml,$(MODULES))
 DEPENDS := $(addsuffix .depends,$(SOURCES))
 OBJECTS := $(SOURCES:.ml=.cmx)
