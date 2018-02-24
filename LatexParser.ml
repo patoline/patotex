@@ -8,8 +8,8 @@ let locate = Pa_ocaml_prelude.locate
 
 (** Usual blank functions for LaTeX, which ignores comments starting
 with a [%] sign an ending at the end of line. *)
-let blank =
-  blank_regexp ''%.*$''
+let latex_blank =
+  blank_regexp ''\(\(%[^\n]*\n\)\|[ \t\n]\)*''
 
 (** Blank function for verbatim content, which does not ignore any
 character *)
