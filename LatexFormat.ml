@@ -1,7 +1,7 @@
 open Typography
 open Typography.Document
 
-module type ThezStructure = sig
+module type LatexStructure = sig
   include Typography.Document.DocumentStructure
   val at_most : int ref
 
@@ -23,7 +23,7 @@ let go_at_level structure level =
   done
 
 (** Macros calls at runtime, when producing the PDF output *)
-module Format (DocStruct : ThezStructure) = struct
+module Format (DocStruct : LatexStructure) = struct
   module DefaultF = FormatArticle.Format(DocStruct)
   include DefaultF
 
