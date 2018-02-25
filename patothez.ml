@@ -29,17 +29,22 @@ let print_syntax_error pos err =
   end;
   Format.pp_print_newline Format.err_formatter ()
 
-let _ =
-  (try
-    let res = Earley.parse_channel ~filename:"__stdin__"
-    document latex_blank stdin in
-    Printf.fprintf stderr "Documentclass: %s\n" res.doc_cls.cls_name.Location.txt;
-    List.iter print_option res.doc_cls.cls_options;
+let parse_buffer buffer =
+  try
+    Earley.parse_buffer document latex_blank buffer
   with
   | EarleyEngine.Parse_error(buf, pos) ->
       let loc = Pa_ocaml_prelude.locate buf pos buf pos in
       print_syntax_error loc Syntax_error; exit 1
   | Latex_syntax_error(pos, err) -> print_syntax_error pos err; exit 1
-  );
+
+let main () =
+  let buffer = Input.from_channel ~filename:"__stdin__" stdin in
+  let res = parse_buffer buffer in
+  Printf.fprintf stderr "Documentclass: %s\n" res.doc_cls.cls_name.Location.txt;
+  List.iter print_option res.doc_cls.cls_options;
   flush stdout; flush stderr;
   Printf.fprintf stderr "No error found! Perhaps a missing \\item?\n"
+
+let _ =
+  main ()
