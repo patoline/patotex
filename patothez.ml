@@ -2,6 +2,23 @@ open Latex
 open LatexParser
 open LatexAst_helper
 
+module ArgSpec = struct
+  open Arg
+
+  let spec = [ ]
+  let file = ref None
+  let set_files name =
+    file := Some name
+
+  let usage = "patothez [FILE]"
+
+  let parse () =
+    try parse spec set_files usage
+    with
+    | Bad(msg) -> Printf.fprintf stderr "Wrong argument %s\n" msg
+    | Help(msg) -> Printf.fprintf stderr "%s\n%s\n" usage msg
+end
+
 let print_syntax_error pos err =
   Location.(print_error Format.err_formatter pos);
   begin
@@ -34,8 +51,14 @@ let parse_buffer buffer =
   | Latex_syntax_error(pos, err) -> print_syntax_error pos err; exit 1
 
 let main () =
-  let buffer = Input.from_channel ~filename:"__stdin__" stdin in
+  ArgSpec.parse ();
+
+  let buffer = match !ArgSpec.file with
+  | None -> Input.from_channel ~filename:"__stdin__" stdin
+  | Some(fname) -> Input.from_file fname in
+
   let res = parse_buffer buffer in
+
   Printf.fprintf stdout "No error found! Perhaps a missing \\item?\n%!"
 
 let _ =
