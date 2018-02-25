@@ -11,6 +11,7 @@ let print_syntax_error pos err =
   Location.(print_error Format.err_formatter pos);
   begin
     match err with
+    | Syntax_error -> Format.eprintf " syntax error"
     | Unmatched_environment(start, close) ->
         Format.eprintf
           " unmatched environment\n\\begin{%s} was closed with \\end{%s}"
@@ -35,7 +36,9 @@ let _ =
     Printf.fprintf stderr "Documentclass: %s\n" res.doc_cls.cls_name.Location.txt;
     List.iter print_option res.doc_cls.cls_options;
   with
-    EarleyEngine.Parse_error(buf, pos) -> Printf.printf "Syntax error\n\n"; exit 1
+  | EarleyEngine.Parse_error(buf, pos) ->
+      let loc = Pa_ocaml_prelude.locate buf pos buf pos in
+      print_syntax_error loc Syntax_error; exit 1
   | Latex_syntax_error(pos, err) -> print_syntax_error pos err; exit 1
   );
   flush stdout; flush stderr;

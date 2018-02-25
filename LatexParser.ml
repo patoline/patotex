@@ -7,6 +7,7 @@ let locate = Pa_ocaml_prelude.locate
 #define LOCATE locate
 
 type latex_syntax_error =
+  | Syntax_error
   | Unmatched_environment of string Location.loc * string Location.loc
   | Unterminated_environment of string Location.loc
   | Document_environment
