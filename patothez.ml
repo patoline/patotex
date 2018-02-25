@@ -2,11 +2,6 @@ open Latex
 open LatexParser
 open LatexAst_helper
 
-let print_option = function
-  | ClsFlag(key) -> Printf.printf "Option '%s' set\n" key.Location.txt
-  | ClsVal(key, value) -> Printf.printf "Option '%s' = '%s'\n"
-  key.Location.txt value.Location.txt
-
 let print_syntax_error pos err =
   Location.(print_error Format.err_formatter pos);
   begin
@@ -41,10 +36,7 @@ let parse_buffer buffer =
 let main () =
   let buffer = Input.from_channel ~filename:"__stdin__" stdin in
   let res = parse_buffer buffer in
-  Printf.fprintf stderr "Documentclass: %s\n" res.doc_cls.cls_name.Location.txt;
-  List.iter print_option res.doc_cls.cls_options;
-  flush stdout; flush stderr;
-  Printf.fprintf stderr "No error found! Perhaps a missing \\item?\n"
+  Printf.fprintf stdout "No error found! Perhaps a missing \\item?\n%!"
 
 let _ =
   main ()
