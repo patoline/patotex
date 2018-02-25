@@ -55,7 +55,10 @@ let main () =
 
   let buffer = match !ArgSpec.file with
   | None -> Input.from_channel ~filename:"__stdin__" stdin
-  | Some(fname) -> Input.from_file fname in
+  | Some(fname) ->
+      try Input.from_file fname
+      with Sys_error(_) -> Input.from_file (fname ^ ".tex")
+  in
 
   let res = parse_buffer buffer in
 
