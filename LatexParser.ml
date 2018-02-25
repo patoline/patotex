@@ -8,6 +8,7 @@ let locate = Pa_ocaml_prelude.locate
 
 type latex_syntax_error =
   | Unmatched_environment of string Location.loc * string Location.loc
+  | Unterminated_environment of string Location.loc
   | Document_environment
 
 exception Latex_syntax_error of loc * latex_syntax_error
@@ -51,6 +52,7 @@ let environment_end env_name = parser
     if txt env_close_name = txt env_name
     then Latex.({env_name; env_content = []; env_loc = _loc})
     else raise_latex ~loc:_loc (Unmatched_environment(env_name, env_close_name))
+  | EOF -> raise_latex ~loc:_loc (Unterminated_environment(env_name))
 
 let parser environment =
   "\\begin{" env_name:identifier '}' ->>
