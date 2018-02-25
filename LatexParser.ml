@@ -10,6 +10,7 @@ type latex_syntax_error =
   | Unmatched_environment of string Location.loc * string Location.loc
   | Unterminated_environment of string Location.loc
   | Document_environment
+  | Preamble_not_allowed of string Location.loc
 
 exception Latex_syntax_error of loc * latex_syntax_error
 
@@ -34,12 +35,14 @@ let documentclass_option = parser
   | key:identifier -> Latex.ClsFlag key
   | key:identifier '=' value:{v:''[^]]+''-> mkloc v _loc} -> Latex.ClsVal(key, value)
 
-let documentclass_options = parser
-  '[' o1:documentclass_option?
-  o2:{ ',' o:documentclass_option }* ']' ->
-    match o1 with
-    | Some(o1) -> o1 :: o2
-    | None -> []
+let parser documentclass_options =
+  opts:{
+    '[' o1:documentclass_option
+    o2:{ ',' o:documentclass_option }* ']' -> o1 :: o2
+  }? ->
+    match opts with
+      | Some(l) -> l
+      | None -> []
 
 let documentclass = parser
   "\\documentclass"
@@ -62,9 +65,18 @@ let parser environment =
 and parser content =
   environment*
 
-(** TODO implement *)
+let package_declaration = parser
+  mac_name:macro_name
+  pkg_params:documentclass_options
+  '{' pkg_name:identifier '}' ->
+    if txt mac_name = "usepackage"
+    then Latex.({ pkg_name; pkg_params; pkg_loc = _loc })
+    else if txt mac_name = "begin"
+    then give_up()
+    else raise_latex ~loc:_loc (Preamble_not_allowed(mac_name))
+
 let preamble = parser
-  EMPTY -> Latex.({ pre_packages = []; pre_loc = _loc})
+  p:package_declaration* -> Latex.({ pre_packages = p; pre_loc = _loc})
 
 let document = parser
   doc_cls:documentclass

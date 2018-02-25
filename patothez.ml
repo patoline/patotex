@@ -23,6 +23,8 @@ let print_syntax_error pos err =
         Format.eprintf ": start tag was here"
     | Document_environment ->
         Format.eprintf " document content must be enclosed inside \\begin{document} and \\end{document}"
+    | Preamble_not_allowed(name) ->
+        Format.eprintf " call to \\%s not allowed in document preamble\n" (txt name)
   end;
   Format.pp_print_newline Format.err_formatter ()
 
