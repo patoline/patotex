@@ -83,7 +83,7 @@ and parser paragraph_item =
     handling *)
 
 and parser paragraph = (change_layout (parser
-  p:paragraph_item* '\n' -> Latex.({par_content = p; par_loc = _loc})
+  p:paragraph_item+ '\n'? -> Latex.({par_content = p; par_loc = _loc})
 ) latex_paragraph_blank)
 
 and parser content_item =
