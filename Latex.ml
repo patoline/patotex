@@ -60,10 +60,13 @@ and paragraph = {
   par_loc : Location.t;
 }
 
+and text = string loc
+
 (** Main content inside a document *)
 and content =
   | Environment of environment
   | Macro of content macro_call
+  | Text of text
   | Paragraph of paragraph
   | Math of math
   | Tikz of tikz

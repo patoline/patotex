@@ -19,6 +19,7 @@ type iterator = {
   environment : iterator -> environment -> unit;
   paragraph : iterator -> paragraph -> unit;
   macro : iterator -> content macro_call -> unit;
+  text : iterator -> text -> unit;
   math : iterator -> math -> unit;
   math_content : iterator -> math_content -> unit;
   math_macro : iterator -> math_content macro_call -> unit;
@@ -50,6 +51,7 @@ let default_iterator = {
     | Paragraph(par) -> this.paragraph this par
     | Math(math) -> this.math this math
     | Macro(macro) -> this.macro this macro
+    | Text(text) -> this.text this text
     | Tikz(tikz) -> failwith "not implemented"   (** FIXME *)
   );
 
@@ -58,6 +60,8 @@ let default_iterator = {
 
   paragraph = (fun this par ->
     List.iter (this.content this) par.par_content);
+
+  text = (fun _ _ -> ());
 
   macro = (fun this macro ->
     generic_macro_iterator (this.content this) macro);

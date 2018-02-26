@@ -23,6 +23,15 @@ with a [%] sign an ending at the end of line. *)
 let latex_blank =
   blank_regexp ''\(\(%[^\n]*\n\)\|[ \t\n]\)*''
 
+let latex_paragraph_blank =
+  let rec fn accept_newline buffer pos =
+    let (c, buffer', pos') = Input.read buffer pos in
+    match c with
+    | '\n' when accept_newline -> fn false buffer' pos'
+    | ' ' | '\t' | '\r' -> fn accept_newline buffer' pos'
+    | _ -> buffer, pos
+  in fn true
+
 (** Blank function for verbatim content, which does not ignore any
 character *)
 let verbatim_blank buf pos = (buf, pos)
@@ -30,7 +39,8 @@ let verbatim_blank buf pos = (buf, pos)
 let identifier = parser i:''[a-zA-Z_][a-zA-Z0-9_]*'' -> mkloc i _loc
 
 let macro_name = parser
-  '\\' mac_name:identifier -> mac_name
+  '\\' mac_name:identifier -> if txt mac_name = "begin" then give_up ()
+  else mac_name
 
 let documentclass_option = parser
   | key:identifier -> Latex.ClsFlag key
@@ -51,20 +61,37 @@ let documentclass = parser
   '{' cls_name:identifier '}' ->
     Latex.({cls_name; cls_options; cls_loc = _loc})
 
+let regular_text = parser
+  t:''[^{}%\\\n]+'' -> mkloc t _loc
+
 let environment_end env_name = parser
   "\\end{" env_close_name:identifier '}' ->
-    if txt env_close_name = txt env_name
-    then Latex.({env_name; env_content = []; env_loc = _loc})
-    else raise_latex ~loc:_loc (Unmatched_environment(env_name, env_close_name))
+    if txt env_close_name <> txt env_name
+    then raise_latex ~loc:_loc (Unmatched_environment(env_name, env_close_name))
   | EOF -> raise_latex ~loc:_loc (Unterminated_environment(env_name))
 
 let parser environment =
   "\\begin{" env_name:identifier '}' ->>
-  content
-  e:(environment_end env_name) -> { e with Latex.env_loc = _loc }
+  c:content (environment_end env_name) ->
+    Latex.({env_name; env_content = c; env_loc = _loc})
+
+and parser paragraph_item =
+    t:regular_text -> Latex.Text(t)
+  | m:macro_name -> Latex.(Macro({
+    mac_name = m; mac_optarg = None; mac_args = [];
+    mac_is_starred=false; mac_loc = _loc})) (* TODO better macro
+    handling *)
+
+and parser paragraph = (change_layout (parser
+  p:paragraph_item* '\n' -> Latex.({par_content = p; par_loc = _loc})
+) latex_paragraph_blank)
+
+and parser content_item =
+    e:environment -> Latex.Environment(e)
+  | p:paragraph -> Latex.Paragraph(p)
 
 and parser content =
-  environment*
+  content_item*
 
 let package_declaration = parser
   mac_name:macro_name
