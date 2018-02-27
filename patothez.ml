@@ -50,6 +50,35 @@ let parse_buffer buffer =
       print_syntax_error loc Syntax_error; exit 1
   | Latex_syntax_error(pos, err) -> print_syntax_error pos err; exit 1
 
+let debug_printer doc =
+  let open LatexAst_iterator in
+  let print_document_class iterator dc =
+    Printf.fprintf stderr "\\documentclass{%s}\n" (txt dc.cls_name)
+  in
+  let print_environment iterator env =
+    Printf.fprintf stderr "\\begin{%s}\n" (txt env.env_name);
+    default_iterator.environment iterator env;
+    Printf.fprintf stderr "\\end{%s}\n" (txt env.env_name)
+  in
+  let print_macro iterator macro =
+    Printf.fprintf stderr "\\%s" (txt macro.mac_name)
+  in
+  let print_text _ text =
+    Printf.fprintf stderr "Text(%s)" (txt text)
+  in
+  let print_paragraph iterator par =
+    default_iterator.paragraph iterator par;
+    Printf.fprintf stderr "\n\n"
+  in
+  let print_iterator = { default_iterator with
+    documentclass = print_document_class;
+    environment = print_environment;
+    text = print_text;
+    macro = print_macro;
+    paragraph = print_paragraph;
+  }
+  in print_iterator.document print_iterator doc
+
 let main () =
   ArgSpec.parse ();
 
@@ -61,6 +90,7 @@ let main () =
   in
 
   let res = parse_buffer buffer in
+  debug_printer res;
 
   Printf.fprintf stdout "No error found! Perhaps a missing \\item?\n%!"
 
