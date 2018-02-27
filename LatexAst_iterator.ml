@@ -33,7 +33,30 @@ let generic_macro_iterator iterator macro =
 
 (** A default iterator which traverses the whole tree, applying each
 {!type:iterator} method to all possible tree items, but without doing
-anything during the traversal. *)
+anything during the traversal.
+
+One can use this iterator in order to define a custom iterator,
+delegatif the tree traversal logic to {!val:default_iterator}.
+
+For example, if you want to print only environments, you can define a
+custom iterator in the following way:
+{[
+let print_env_iterator = { default_iterator with
+  environment = (fun iterator env ->
+    Printf.printf "Environment %s\n" (LatexAst_helper.txt env);
+    default_iterator.environment iterator env
+  );
+}
+]}
+The last line uses {!val:default_iterator} to visit child nodes.
+
+Then call the following to traverse a document [doc]:
+{[
+let _ = print_env_iterator.document print_env_iterator doc
+]}
+The {!val:default_iterator} will pass the [print_env_iterator] as the
+first parameter to all nested calls.
+*)
 let default_iterator = {
   document = (fun this document ->
     this.documentclass this document.doc_cls;
