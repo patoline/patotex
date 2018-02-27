@@ -57,9 +57,9 @@ let parser documentclass_options =
 
 let documentclass = parser
   "\\documentclass"
-  cls_options:documentclass_options
-  '{' cls_name:identifier '}' ->
-    Latex.({cls_name; cls_options; cls_loc = _loc})
+  options:documentclass_options
+  '{' name:identifier '}' ->
+    DocCls.mk ~_loc ~options name
 
 let regular_text = parser
   t:''[^{}%\\\n]+'' -> mkloc t _loc
