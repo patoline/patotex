@@ -1,3 +1,4 @@
+(* SPDX-License-Identifier: GPL-3.0 *)
 (** Abstract Syntax Tree for simple LaTeX files
 
 We define in this module an Abstract Syntax Tree representation for

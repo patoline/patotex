@@ -1,3 +1,4 @@
+(* SPDX-License-Identifier: GPL-3.0 *)
 (** Inspecting the LaTeX AST with open recursion.
 
 The {!val:default_iterator} traverses a syntax tree without actually

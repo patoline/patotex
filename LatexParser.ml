@@ -1,3 +1,4 @@
+(* SPDX-License-Identifier: GPL-3.0 *)
 (** Parser for simple LaTeX files *)
 
 open Earley
