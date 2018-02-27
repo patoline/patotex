@@ -1,5 +1,8 @@
+(** Utility functions *)
+
 open Latex
 
+(** {1 Handling locations in source file} *)
 type loc = Location.t
 
 let default_loc = ref Location.none
@@ -15,10 +18,11 @@ let mkloc = Location.mkloc
 
 let txt loc = loc.Location.txt
 
+(** {1 Helper functions for building syntax trees} *)
 module DocCls = struct
-  let mk ?(loc = !default_loc) ?(options = []) name = {
+  let mk ?(_loc = !default_loc) ?(options = []) name = {
     cls_name = name;
     cls_options = options;
-    cls_loc = loc;
+    cls_loc = _loc;
   }
 end
