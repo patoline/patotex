@@ -2,6 +2,7 @@ open Latex
 open LatexParser
 open LatexAst_helper
 
+(** Command-line arguments for the main executable *)
 module ArgSpec = struct
   open Arg
 
@@ -19,6 +20,7 @@ module ArgSpec = struct
     | Help(msg) -> Printf.fprintf stderr "%s\n%s\n" usage msg
 end
 
+(** Syntax error pretty-printing *)
 let print_syntax_error pos err =
   Location.(print_error Format.err_formatter pos);
   begin
@@ -41,6 +43,8 @@ let print_syntax_error pos err =
   end;
   Format.pp_print_newline Format.err_formatter ()
 
+(** Main entry point to the Earley grammar. This functions catches any
+    error raised by the parser and prints them to standard error. *)
 let parse_buffer buffer =
   try
     Earley.parse_buffer document latex_blank buffer
@@ -50,6 +54,8 @@ let parse_buffer buffer =
       print_syntax_error loc Syntax_error; exit 1
   | Latex_syntax_error(pos, err) -> print_syntax_error pos err; exit 1
 
+(** Pretty-printing of the result tree, obtained after parsing, for
+    debugging purpose. *)
 let debug_printer doc =
   let open LatexAst_iterator in
   let print_document_class iterator dc =
@@ -79,6 +85,7 @@ let debug_printer doc =
   }
   in print_iterator.document print_iterator doc
 
+(** Main function *)
 let main () =
   ArgSpec.parse ();
 
