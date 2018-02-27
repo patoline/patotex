@@ -11,7 +11,7 @@ module ArgSpec = struct
   let set_files name =
     file := Some name
 
-  let usage = "patothez [FILE]"
+  let usage = "patotex [FILE]"
 
   let parse () =
     try parse spec set_files usage
