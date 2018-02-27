@@ -30,6 +30,9 @@ let latex_paragraph_blank =
     match c with
     | '\n' when accept_newline -> fn false buffer' pos'
     | ' ' | '\t' | '\r' -> fn accept_newline buffer' pos'
+    | '%' ->
+        let (buffer', pos') = blank_regexp ''[^\n]*\n'' buffer' pos'
+        in fn false buffer' pos'
     | _ -> buffer, pos
   in fn true
 
