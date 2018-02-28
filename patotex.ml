@@ -51,7 +51,7 @@ let parse_buffer buffer =
   try
     Earley.parse_buffer document latex_blank buffer
   with
-  | EarleyEngine.Parse_error(buf, pos) ->
+  | Earley.Parse_error(buf, pos) ->
       let loc = Pa_ocaml_prelude.locate buf pos buf pos in
       print_syntax_error loc Syntax_error; exit 1
   | Latex_syntax_error(pos, err) -> print_syntax_error pos err; exit 1
